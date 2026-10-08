@@ -1,0 +1,72 @@
+{
+  "_comment": "AMAHub Key Broker release policy. Compiled into the release: changing anything here is a new release with a new measurement.",
+  "chips": [
+    {
+      "name": "KBS1",
+      "_host": "Datacenter",
+      "product": "Genoa",
+      "chip_id": "84cfcf849c7b8e6b3f6f9c0a6878a0a51bb02e61630f72964df1f17bc02251e3474ee18e108fbf77410968afb1c6b5990cd8eef60fb81ff9b39fc302b6e453dd",
+      "min_tcb": {
+        "bl": 12,
+        "tee": 0,
+        "snp": 29,
+        "ucode": 88
+      },
+      "_vcek": "AMD KDS VCEK for this chip at min_tcb, fetched 2026-10-08",
+      "vcek_der_b64": "MIIFPzCCAvOgAwIBAgIBADBBBgkqhkiG9w0BAQowNKAPMA0GCWCGSAFlAwQCAgUAoRwwGgYJKoZIhvcNAQEIMA0GCWCGSAFlAwQCAgUAogMCATAwezEUMBIGA1UECwwLRW5naW5lZXJpbmcxCzAJBgNVBAYTAlVTMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UECAwCQ0ExHzAdBgNVBAoMFkFkdmFuY2VkIE1pY3JvIERldmljZXMxEjAQBgNVBAMMCVNFVi1HZW5vYTAeFw0yNjEwMDcwMDU1MTZaFw0zMzEwMDcwMDU1MTZaMHoxFDASBgNVBAsMC0VuZ2luZWVyaW5nMQswCQYDVQQGEwJVUzEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNVBAgMAkNBMR8wHQYDVQQKDBZBZHZhbmNlZCBNaWNybyBEZXZpY2VzMREwDwYDVQQDDAhTRVYtVkNFSzB2MBAGByqGSM49AgEGBSuBBAAiA2IABLqLp4EUnxbaE//8PKXhMZsbN6upP3nzDKZHO12oJcIxV4sTkf0nNU1y/gGggZ7dI+ZSRsiO+3R4aAaJi/j/1sLpIcJhcN2ei4xrH57L7jSjJR9isu6fqgfhaOe+WS0J56OCARMwggEPMBAGCSsGAQQBnHgBAQQDAgEAMBQGCSsGAQQBnHgBAgQHFgVHZW5vYTARBgorBgEEAZx4AQMBBAMCAQwwEQYKKwYBBAGceAEDAgQDAgEAMBEGCisGAQQBnHgBAwQEAwIBADARBgorBgEEAZx4AQMFBAMCAQAwEQYKKwYBBAGceAEDBgQDAgEAMBEGCisGAQQBnHgBAwcEAwIBADARBgorBgEEAZx4AQMDBAMCAR0wEQYKKwYBBAGceAEDCAQDAgFYME0GCSsGAQQBnHgBBARAhM/PhJx7jms/b5wKaHigpRuwLmFjD3KWTfHxe8AiUeNHTuGOEI+/d0EJaK+xxrWZDNju9g+4H/mzn8MCtuRT3TBBBgkqhkiG9w0BAQowNKAPMA0GCWCGSAFlAwQCAgUAoRwwGgYJKoZIhvcNAQEIMA0GCWCGSAFlAwQCAgUAogMCATADggIBAJjrZjJJmzRkrSUSIVrl9IVgzRqc9RQguk24uPK9pNvd9V6EXe1DeYW36urc5urYNK9Yga4d3NvZuJHJb0w+Ur86qcmMNoHvQJqynnmGFjMmevf30o+NCComP8OVgz3Rfpqk1NKZv6qnCShsXJYny1/ev98R6BXsFggBvTnXk4TR57tYCgjutXDjwmkPRdtIsRuHP2H/QcQZV7jLCskjEVXvulzvTl0yZEFsBnWntCTLS9QGTDFgcdd25o7JlPzCbDdIGoqPYNOjAn/2xfQSVXwJwZxXvXqHVWgEJkEhF2VqaYuNbS5+uqy5F4S78f6uNdw4gr+gTFRDW2Ii7zaWV0zOnXe6LXfM0ADpQB2aKCJaXJ0WINS94tozO53Itjdt1Cq8n4vdpBIXVLpy5ldwSWlLrtU1OtcXpxAwkUuw9RWBo5dFjLZJCt7hMVrzLZF/ChDEVfFxxS5JvneUaDIbHWLZgJv4xR/Ej9FanErJTs/Ra9t3u9cyFDnurimzdIblTCpfx01Cgi10ovtDRNctT6HF3tR/spXsQ+SwV34t2u9duQ07Uh3Rd0allTcdoTgLUOc7WX72d/IAx7Iouy0LUWlqxybDri2/5VxKs2JxLwq8MKkI3BqfZuMj4ba5YMZ2QMr/w1eKS80xXnQn+aPQigVRZZNcGTdPewY3Ab5t1zLu"
+    },
+    {
+      "name": "KBS2",
+      "_host": "New York",
+      "product": "Turin",
+      "chip_id": "a3aa40340bd500ad",
+      "min_tcb": {
+        "fmc": 1,
+        "bl": 3,
+        "tee": 2,
+        "snp": 5,
+        "ucode": 97
+      },
+      "_vcek": "AMD KDS VCEK for this chip at min_tcb, fetched 2026-10-08",
+      "vcek_der_b64": "MIIFBTCCArmgAwIBAgIBADBBBgkqhkiG9w0BAQowNKAPMA0GCWCGSAFlAwQCAgUAoRwwGgYJKoZIhvcNAQEIMA0GCWCGSAFlAwQCAgUAogMCATAwezEUMBIGA1UECwwLRW5naW5lZXJpbmcxCzAJBgNVBAYTAlVTMRQwEgYDVQQHDAtTYW50YSBDbGFyYTELMAkGA1UECAwCQ0ExHzAdBgNVBAoMFkFkdmFuY2VkIE1pY3JvIERldmljZXMxEjAQBgNVBAMMCVNFVi1UdXJpbjAeFw0yNjEwMDcwMTU3MzBaFw0zMzEwMDcwMTU3MzBaMHoxFDASBgNVBAsMC0VuZ2luZWVyaW5nMQswCQYDVQQGEwJVUzEUMBIGA1UEBwwLU2FudGEgQ2xhcmExCzAJBgNVBAgMAkNBMR8wHQYDVQQKDBZBZHZhbmNlZCBNaWNybyBEZXZpY2VzMREwDwYDVQQDDAhTRVYtVkNFSzB2MBAGByqGSM49AgEGBSuBBAAiA2IABOhpGInKk3enFOkTOLdqYRNQvSrfcNWBTfM/VYfPwlwPV3iejVlDBJLnPVwMdXdDTielg2XbBSrY14kE0kml2wJCnogVsgGc7xb1sTdj9sERM4GoO+ueVVc4N9+nWYlERqOB2jCB1zAQBgkrBgEEAZx4AQEEAwIBATAUBgkrBgEEAZx4AQIEBxYFVHVyaW4wEQYKKwYBBAGceAEDCQQDAgEBMBEGCisGAQQBnHgBAwEEAwIBAzARBgorBgEEAZx4AQMCBAMCAQIwEQYKKwYBBAGceAEDAwQDAgEFMBEGCisGAQQBnHgBAwUEAwIBADARBgorBgEEAZx4AQMGBAMCAQAwEQYKKwYBBAGceAEDBwQDAgEAMBEGCisGAQQBnHgBAwgEAwIBYTAVBgkrBgEEAZx4AQQECKOqQDQL1QCtMEEGCSqGSIb3DQEBCjA0oA8wDQYJYIZIAWUDBAICBQChHDAaBgkqhkiG9w0BAQgwDQYJYIZIAWUDBAICBQCiAwIBMAOCAgEAE1D/A0No9gDGbM/XjIN1DyU1hwgdMQHb5HSUivAo/SflbE+373Si5nLx7ITNdBZERl0uJGS9+CuiywjpFvyb3CUKJuUD/YV7zj5DkrwY+K4KjvdA4ydMYrtYbinpQYax3d4JLuA+pBMb4b7TIeTjTEXHxNHI0maSFPmS1jJhtUKGZD5DG0KFvXld7KIMO6BM5TJuBN46yjoEGXnUCd727JNf2TGXZZG86ckyCr3KYmzGE0j1ac0yqgrqmKW9xgJjOpS1jsB5jj+JeEL6ZPnc/QvzLYFWmNpnxVtpVDqEr57C+A0HaoYV5UeutPyOGIRsGPAw01yfm/l3onNDNBPpXvP8yMVNfqjVYyQwJIpjx6C+G2USPeN+6q4Mmu19ADBWXNCnqM0aaNBERuBdKqI7GLM4IEZqbMKZ2cVBwJ75gAc0RcC1WGJGyegjjTmos5bAC1SxgspNpGY5zOoyZ9hVB2Hd2QHMMUUzRYAW0FiiLNSZHsAwCDghUzezkIZvEnziSMYrZKJVT+cvx6ydDjbIHbLMhcAeB8RBWbXgCk9zRMCU6p4qFcAM2uSj1jBcwL+VJ2iVHcuNfuOkR/vnhg8wU8c3oiqf1NGPtAa13NvfOkyJc/lH6keXyfeIzhjveLTYLXpHQoBL27NjYR/Dy/cjWHt4tdj4wvLgSE/B13EJx9k="
+    }
+  ],
+  "allowed_cpu_families": [
+    25,
+    26
+  ],
+  "min_guest_svn": 0,
+  "guest_policy": {
+    "min_abi": [
+      0,
+      0
+    ],
+    "forbid": [
+      "DEBUG",
+      "MIGRATE_MA"
+    ],
+    "require": []
+  },
+  "platform_info": {
+    "require": [
+      "ALIAS_CHECK_COMPLETE"
+    ],
+    "forbid": [],
+    "warn_if_clear": [
+      "CIPHERTEXT_HIDING_EN"
+    ]
+  },
+  "platform_tables": {
+    "_comment": "Firmware-measured ACPI and memory-map digests allowed for this release's VM shape (4 vCPU, 16G).",
+    "allowed_memory_map_digests": [
+      "2aa198f2138d6e95a5245e22d21bfa40f5ef97f27ed681bb1ff2de1f3838fc07"
+    ],
+    "allowed_acpi_digests": [
+      "5c1967026809ef16c681e94d9a797d58e7ffc8f374cd3ba0ec11024c9d395b10"
+    ]
+  },
+  "max_vmpl": 1,
+  "signing_key": "vcek",
+  "_stats_operator": "AMAHub operator key: APIKEY tokens it signs may read GET /v1/stats.",
+  "stats_operator_pk_b58": "6KTXmJfbfmLGTaoY1NH8jKdHb9RX9aTRLtYBh2c5djwuqMEi5J98rjmXDFELctLH62"
+}
