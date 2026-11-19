@@ -32,8 +32,9 @@ Contents
 11. [Step 8: verify the running VM](#11-step-8-verify-the-running-vm)
 12. [Owner secrets](#12-owner-secrets)
 13. [Wallet, state disk and new versions](#13-wallet-state-disk-and-new-versions)
-14. [Troubleshooting](#14-troubleshooting)
-15. [Complete example](#15-complete-example)
+14. [Updating deployed agents](#14-updating-deployed-agents)
+15. [Troubleshooting](#15-troubleshooting)
+16. [Complete example](#16-complete-example)
 
 ---
 
@@ -306,7 +307,7 @@ curl -s "$HUB/v1/agent/my" -H "Authorization: Bearer $(tok)" | jq '.running[] | 
 
 `status` goes `queued` → `booting` → `running`. A TEE VM that fails
 attestation, or cannot open its disks, powers itself off and shows `failed`;
-it is not relaunched. See [section 14](#14-troubleshooting).
+it is not relaunched. See [section 15](#15-troubleshooting).
 
 Stop an instance with `POST $HUB/v1/agent/stop` and body `{"uuid": "<uid>"}`.
 A new launch is a new deployment with a new wallet
@@ -399,16 +400,180 @@ So today:
 - **Releasing a new version is a new agent.** Build it, register its key and
   base, upload, publish its manifest. Owners move by withdrawing from the old
   deployment, launching the new one and depositing again.
+- **To update deployments in place, the agent has to update itself.** Keep the
+  image fixed and let it follow a release channel you sign:
+  [section 14](#14-updating-deployed-agents).
 - Treat the wallet as an operating balance, not long-term storage.
 
-**Planned, not yet released:** updates that keep the wallet. An image will
+**Planned, not yet released:** platform-level updates that keep the wallet. An image will
 carry a stable app name, the wallet will be derived from owner, author and app
 instead of the image root, and each new image will run under an existing
 deployment only after its owner signs an approval for it. Until a KBS release
 announces this in [MEASUREMENT.md](MEASUREMENT.md), the table above applies and
 none of it should be relied on.
 
-## 14. Troubleshooting
+## 14. Updating deployed agents
+
+Because a new image is a new wallet, you cannot move an existing deployment to
+new code by uploading a new image. What you can do, today and with no platform
+support, is build the update mechanism **into the agent**: the image stays the
+same (same root, same wallet, same state disk) and the code it runs follows a
+release channel you sign.
+
+```
+image (fixed root)                       state disk (encrypted, per deployment)
+  /opt/myagent/release.pub   your key      /var/lib/myagent/releases/<version>/
+  /opt/myagent/update        updater       /var/lib/myagent/current -> releases/<version>
+  /opt/myagent/app/          version 0     /var/lib/myagent/version
+```
+
+The image holds a small updater, your release public key and a first version
+of the app. The updater downloads newer versions, checks your signature, and
+installs them on the state disk. [`tools/agent-update.sh`](tools/agent-update.sh)
+is a reference updater you can ship as is.
+
+### What owners are trusting
+
+Say this plainly wherever you publish the agent:
+
+- The attested root now proves the updater and your release key, **not** the
+  code that is running. Whoever holds the release key can change that code,
+  and so can reach every wallet and owner secret of every deployment on the
+  channel.
+- Without an updater, nobody can change the code of a deployment, including
+  you. Choose per agent; do not add an updater to an agent that does not need
+  one.
+
+### 1. Make a release key
+
+```sh
+openssl genpkey -algorithm ed25519 -out release.key      # keep offline; never in the image
+openssl pkey -in release.key -pubout -out release.pub    # goes into the image
+```
+
+Losing `release.key` ends updates for that image. Leaking it gives away every
+deployment on it. There is no way to rotate it without a new image.
+
+### 2. Lay out the image
+
+Add to the agent directory from [section 5](#5-step-2-prepare-the-agent-directory):
+
+```
+agent/opt/myagent/release.pub
+agent/opt/myagent/update                          tools/agent-update.sh
+agent/opt/myagent/app/...                         the version bundled with the image
+agent/etc/systemd/system/myagent.service
+agent/etc/systemd/system/myagent-update.service
+agent/etc/systemd/system/myagent-update.timer
+agent/etc/systemd/system/multi-user.target.wants/myagent.service -> ../myagent.service
+agent/etc/systemd/system/timers.target.wants/myagent-update.timer -> ../myagent-update.timer
+```
+
+`myagent.service` runs the installed release if there is one, else the bundled
+version:
+
+```ini
+[Unit]
+After=biome-bootstrap-net.service network-online.target
+
+[Service]
+EnvironmentFile=/etc/environment
+ExecStart=/bin/sh -c 'd=/var/lib/myagent/current; [ -x "$$d/run" ] || d=/opt/myagent/app; exec "$$d/run"'
+Restart=always
+```
+
+(`$$` is how a systemd unit writes a literal `$`.)
+
+`myagent-update.service` and `myagent-update.timer`:
+
+```ini
+[Service]
+Type=oneshot
+Environment=APP=myagent CHANNEL=https://updates.example.com/myagent/stable
+ExecStart=/opt/myagent/update
+```
+
+```ini
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=15min
+```
+
+The updater needs `bash`, `curl`, `jq`, `tar`, `sha256sum` and `openssl` 3.x.
+Check that the base you build on has them, or put them in the image.
+
+Then build, register, upload and publish the image as in sections 6 to 9.
+
+### 3. Publish a release
+
+A release is a `.tar.gz` whose top level holds an executable `run`, plus a
+signed `latest.json` on any HTTPS host you control:
+
+```sh
+VERSION=7                                                # an integer, higher every time
+tar -czf myagent-$VERSION.tar.gz -C build/ .             # build/run must exist and be executable
+jq -cn --arg a myagent --argjson v "$VERSION" \
+      --arg s "$(sha256sum < myagent-$VERSION.tar.gz | cut -d' ' -f1)" \
+      --arg u "https://updates.example.com/myagent/stable/myagent-$VERSION.tar.gz" \
+      '{app: $a, version: $v, sha256: $s, url: $u}' > latest.json
+openssl pkeyutl -sign -inkey release.key -rawin -in latest.json -out latest.json.sig
+# upload the bundle first, then latest.json.sig, then latest.json
+```
+
+Every deployment installs it at its next check and restarts the agent. The
+updater installs a release only if all of these hold:
+
+- the signature on `latest.json` verifies under the key in the image
+- `app` is this app
+- `version` is higher than any version this deployment has installed
+- the bundle matches the signed `sha256`
+
+The host serving the channel is not trusted: it can withhold a release, never
+change one.
+
+### 4. New launches
+
+A deployment launched from the same image starts on the bundled version and
+updates itself at the first check, 30 seconds after boot. That is enough for
+most agents.
+
+If new launches must start on current code (for example the bundled version is
+no longer safe to run even briefly), build a new image with the new version
+under `opt/myagent/app/` and **the same `release.pub`, app name and channel**,
+then publish it as in sections 6 to 9. It is a new root, so a separate agent
+for new launches; existing deployments stay on the old root and keep following
+the channel. To stop launches of the old image, set its manifest to
+`private: true`. Do not delete its `_TEE_AGENT_KEY_<ROOT>`: existing
+deployments need it at every boot.
+
+### 5. Rules for a safe channel
+
+- **Releases must be able to start from any earlier state.** Deployments skip
+  versions; data migrations run inside the release.
+- **Withdraw must survive a bad release.** Keep the owner's withdraw path as
+  simple as possible and test it on every release: a release that crashes on
+  start is repaired by the next one, a release that cannot withdraw strands
+  funds.
+- **Protect the updater from the app.** Files in the image can be overwritten
+  on the state disk by root. Run the app as an unprivileged user, so a bug in
+  it cannot replace `release.pub` or the updater.
+- **Show what is running.** Have the agent report its version and the bundle's
+  `sha256` (the updater leaves it in `current/.sha256`), so owners can compare
+  with what you published.
+- **Rollback is limited, not impossible.** The updater never installs a lower
+  version, but a host that restores an old copy of the state disk and blocks
+  the channel can keep a deployment on an older release you signed. Never sign
+  something you would not want run later.
+- **Owner approval, if you want it.** For agents where the owner should agree
+  to each update, have the updater also require a signature over
+  `app`, `version` and `sha256` by the owner's key (`BIOME_USER_PK` in
+  `/etc/environment`) before installing. That keeps a leaked release key from
+  being enough.
+- **What a channel cannot change:** the base image and kernel, and the release
+  key itself. Those need a new image, and for existing deployments that means
+  withdraw and relaunch.
+
+## 15. Troubleshooting
 
 A TEE VM that cannot attest powers off; the hub shows `failed`. The reasons
 the KBS gives, and the fix:
@@ -433,7 +598,7 @@ Other symptoms:
 - **Upload `state: "error"`:** the file is not what `make-tee-agent.sh`
   produced for that root; rebuild and upload the new root.
 
-## 15. Complete example
+## 16. Complete example
 
 ```sh
 set -euo pipefail
