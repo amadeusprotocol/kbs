@@ -18,6 +18,11 @@
 #   PUBKEY    Ed25519 public key, PEM (part of the image, so of its root)
 #   STATE     where releases live           (default /var/lib/$APP)
 #   SERVICE   systemd unit to restart       (default $APP.service; "" = none)
+#   OWNER_APPROVAL=1   also require the owner's signature for each version:
+#             $CHANNEL/approvals/<uuid>/<version>.sig, checked by $VERIFY_OWNER
+#             (default /opt/$APP/owner-approval.py, see that file) against
+#             BIOME_USER_PK and BIOME_UUID from /etc/environment. Without a
+#             valid approval the release is left for the next run.
 # Requires: bash, curl, jq, openssl (3.x), tar, sha256sum.
 set -euo pipefail
 umask 077
@@ -53,6 +58,20 @@ installed=$(cat "$STATE/version" 2>/dev/null || echo 0)
 [[ "$installed" =~ ^[0-9]+$ ]] || installed=0
 if (( version <= installed )); then
     exit 0
+fi
+
+if [[ "${OWNER_APPROVAL:-0}" == 1 ]]; then
+    # Parsed, never sourced. Both values come from the verified launch package.
+    envval() { sed -n "s/^$1='\\(.*\\)'\$/\\1/p" "${ENV_FILE:-/etc/environment}" | tail -n 1; }
+    owner=$(envval BIOME_USER_PK); uuid=$(envval BIOME_UUID)
+    [[ "$owner" =~ ^[1-9A-HJ-NP-Za-km-z]{40,80}$ && "$uuid" =~ ^[0-9a-f]{1,32}$ ]] ||
+        { echo "agent-update: no owner identity in the environment" >&2; exit 1; }
+    if ! fetch "$CHANNEL/approvals/$uuid/$version.sig" "$TMP/approval.sig" 4096 2>/dev/null; then
+        echo "agent-update: version $version waits for the owner's approval" >&2
+        exit 0
+    fi
+    "${VERIFY_OWNER:-/opt/$APP/owner-approval.py}" verify "$owner" "$APP" "$uuid" "$version" "$sha" "$TMP/approval.sig" ||
+        { echo "agent-update: owner approval for version $version does not verify" >&2; exit 1; }
 fi
 
 fetch "$url" "$TMP/bundle.tar.gz" "${MAX_BUNDLE_BYTES:-2147483648}"

@@ -565,14 +565,85 @@ deployments need it at every boot.
   version, but a host that restores an old copy of the state disk and blocks
   the channel can keep a deployment on an older release you signed. Never sign
   something you would not want run later.
-- **Owner approval, if you want it.** For agents where the owner should agree
-  to each update, have the updater also require a signature over
-  `app`, `version` and `sha256` by the owner's key (`BIOME_USER_PK` in
-  `/etc/environment`) before installing. That keeps a leaked release key from
-  being enough.
+- **Owner approval, if you want it.** The updater can also require the owner's
+  signature for each version, so a leaked release key is not enough:
+  [step 6](#6-optional-owner-approval-per-update).
 - **What a channel cannot change:** the base image and kernel, and the release
   key itself. Those need a new image, and for existing deployments that means
   withdraw and relaunch.
+
+### 6. Optional: owner approval per update
+
+For agents where no code should change without the owner agreeing, the updater
+can demand a second signature: yours says "this is a genuine release", the
+owner's says "I accept it on this deployment". Neither of you can then change
+the code alone.
+
+**What the owner signs.** With the BLS12-381 key they launched with (the key
+behind their bearer token), the exact bytes
+
+```
+tee-agent-update-approve/v1\n<app>\n<uuid>\n<version>\n<sha256>\n
+```
+
+using the IETF BLS signature scheme (public keys in G1, signatures in G2,
+`BLS12381G2_XMD:SHA-256_SSWU_RO_`) with the domain tag
+`TEE_AGENT_UPDATE_APPROVE_V1_BLS12381G2_XMD:SHA-256_SSWU_RO_`. The `uuid` makes
+an approval valid for one deployment only, and the `sha256` for one exact
+bundle. [`tools/owner-approval.py`](tools/owner-approval.py) signs and
+verifies this format:
+
+```sh
+tools/owner-approval.py sign "$OWNER_SK_HEX" myagent <uuid> 7 <sha256 from latest.json> > 7.sig
+```
+
+In practice your release page asks the owner's wallet for this signature. The
+wallet must be able to sign a message under a custom domain tag; an owner
+whose wallet cannot would have to sign with the raw key, as above.
+
+**How it reaches the agent.** Through your channel: store the signature (hex)
+at `$CHANNEL/approvals/<uuid>/<version>.sig`. The channel stays untrusted: it
+can withhold an approval, never forge one.
+
+**Turning it on in the image.**
+
+1. Bundle the verifier and its two Python packages:
+
+   ```sh
+   cp tools/owner-approval.py agent/opt/myagent/owner-approval.py
+   pip install --target agent/opt/myagent/pylib py_ecc base58
+   ```
+
+2. Set it in `myagent-update.service`:
+
+   ```ini
+   Environment=APP=myagent CHANNEL=https://updates.example.com/myagent/stable
+   Environment=OWNER_APPROVAL=1 PYTHONPATH=/opt/myagent/pylib
+   ```
+
+The updater then reads the deployment's `BIOME_UUID` and the owner's
+`BIOME_USER_PK` from `/etc/environment`, fetches the approval for the version
+on offer and verifies it before downloading anything. With no approval it
+leaves the release alone and tries again at the next run; with an invalid one
+it fails. This setting is part of the image, so of its root: an owner can see
+from the attested root that approval is enforced, and you cannot turn it off
+for an existing deployment.
+
+**Why the owner key in the VM can be trusted.** `BIOME_USER_PK` comes from the
+operator-signed launch package, and the KBS releases your image key only after
+checking that package against the VM's attestation report. The deployment's
+wallet is derived from the same owner key, so a launch under another owner key
+is another wallet.
+
+**What to plan for.**
+
+- Owners who never approve stay on old versions. Keep every version you have
+  shipped safe to run, or have the agent stop trading (never withdrawing) when
+  it is too far behind, and tell owners.
+- Approvals are per version. If you replace a release, give it a new version
+  number; owners approve again.
+- An approval never expires. An owner who approved version 7 has approved it
+  for as long as it is the next version on offer.
 
 ## 15. Troubleshooting
 
