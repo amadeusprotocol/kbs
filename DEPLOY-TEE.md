@@ -499,8 +499,9 @@ OnBootSec=30
 OnUnitActiveSec=15min
 ```
 
-The updater needs `bash`, `curl`, `jq`, `tar`, `sha256sum` and `openssl` 3.x.
-Check that the base you build on has them, or put them in the image.
+The updater needs `bash`, `curl`, `jq`, `tar`, `sha256sum`, `flock` and
+`openssl` 3.x. The current base (`a028fda0…`) ships all of them (OpenSSL 3.5),
+along with `python3`; a later base may differ, so check the one you pin.
 
 Then build, register, upload and publish the image as in sections 6 to 9.
 
