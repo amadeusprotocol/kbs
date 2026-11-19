@@ -9,6 +9,7 @@ it runs.
 | Verify in a browser | https://kbsv2.ama.one/verify |
 | Release measurement to trust | [MEASUREMENT.md](MEASUREMENT.md) |
 | API guide (secrets, auth, attestation) | [API.md](API.md) |
+| Deploy a confidential (TEE) agent, step by step | [DEPLOY-TEE.md](DEPLOY-TEE.md) |
 | Release policy (pinned chips, VCEKs, firmware floors) | [release/policy.json](release/policy.json) |
 
 This repo publishes the release measurement, the policy and the API. The KBS source and release binaries are not public yet pending the next funding round.
