@@ -39,7 +39,7 @@ flock -n 9 || exit 0
 TMP=$(mktemp -d "$STATE/.update.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT
 
-fetch() { curl -fsS --retry 3 --max-time 300 --max-filesize "$3" -o "$2" "$1"; }
+fetch() { curl -fsS --connect-timeout 20 --retry 3 --max-time 300 --max-filesize "$3" -o "$2" "$1"; }
 
 fetch "$CHANNEL/latest.json" "$TMP/latest.json" 65536
 fetch "$CHANNEL/latest.json.sig" "$TMP/latest.sig" 4096

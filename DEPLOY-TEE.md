@@ -532,6 +532,9 @@ updater installs a release only if all of these hold:
 The host serving the channel is not trusted: it can withhold a release, never
 change one.
 
+The channel must be on the public internet. A VM cannot open connections to
+private address ranges or to its own host, so a channel there is unreachable.
+
 ### 4. New launches
 
 A deployment launched from the same image starts on the bundled version and
@@ -613,6 +616,9 @@ can withhold an approval, never forge one.
    cp tools/owner-approval.py agent/opt/myagent/owner-approval.py
    pip install --target agent/opt/myagent/pylib py_ecc base58
    ```
+
+   These packages include compiled modules, so run `pip` with the same Python
+   version as the base image (3.14 on the current base), on x86-64 Linux.
 
 2. Set it in `myagent-update.service`:
 
